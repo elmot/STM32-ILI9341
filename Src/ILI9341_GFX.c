@@ -56,7 +56,7 @@ void ILI9341_Draw_Hollow_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_
     int y = 0;
     int dx = 1;
     int dy = 1;
-    int err = dx - (Radius << 1);
+    int err = dx - (Radius << 1u);
 
     while (x >= y)
     {
@@ -79,7 +79,7 @@ void ILI9341_Draw_Hollow_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_
         {
             x--;
             dx += 2;
-            err += (-Radius << 1) + dx;
+            err += (-Radius * 2) + dx;
         }
     }
 }
@@ -90,7 +90,7 @@ void ILI9341_Draw_Filled_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_
 	
 		int x = Radius;
     int y = 0;
-    int xChange = 1 - (Radius << 1);
+    int xChange = 1 - (Radius << 1u);
     int yChange = 0;
     int radiusError = 0;
 
@@ -110,7 +110,7 @@ void ILI9341_Draw_Filled_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_
         y++;
         radiusError += yChange;
         yChange += 2;
-        if (((radiusError << 1) + xChange) > 0)
+        if (((radiusError * 2) + xChange) > 0)
         {
             x--;
             radiusError += xChange;
@@ -128,14 +128,10 @@ void ILI9341_Draw_Hollow_Rectangle_Coord(uint16_t X0, uint16_t Y0, uint16_t X1, 
 	uint16_t 	Y_length = 0;
 	uint8_t		Negative_X = 0;
 	uint8_t 	Negative_Y = 0;
-	float 		Calc_Negative = 0;
-	
-	Calc_Negative = X1 - X0;
-	if(Calc_Negative < 0) Negative_X = 1;
-	Calc_Negative = 0;
-	
-	Calc_Negative = Y1 - Y0;
-	if(Calc_Negative < 0) Negative_Y = 1;
+
+    if((X1 - X0 )< 0) Negative_X = 1;
+
+    if((Y1 - Y0) < 0) Negative_Y = 1;
 	
 	
 	//DRAW HORIZONTAL!
@@ -178,17 +174,13 @@ void ILI9341_Draw_Filled_Rectangle_Coord(uint16_t X0, uint16_t Y0, uint16_t X1, 
 	uint16_t 	Y_length = 0;
 	uint8_t		Negative_X = 0;
 	uint8_t 	Negative_Y = 0;
-	int32_t 	Calc_Negative = 0;
-	
+
 	uint16_t X0_true = 0;
 	uint16_t Y0_true = 0;
 	
-	Calc_Negative = X1 - X0;
-	if(Calc_Negative < 0) Negative_X = 1;
-	Calc_Negative = 0;
-	
-	Calc_Negative = Y1 - Y0;
-	if(Calc_Negative < 0) Negative_Y = 1;
+	if((X1 - X0) < 0) Negative_X = 1;
+
+	if((Y1 - Y0) < 0) Negative_Y = 1;
 	
 	
 	//DRAW HORIZONTAL!
@@ -228,7 +220,6 @@ void ILI9341_Draw_Char(char Character, uint8_t X, uint8_t Y, uint16_t Colour, ui
 		function_char = Character;
 		
     if (function_char < ' ') {
-        Character = 0;
     } else {
         function_char -= 32;
 		}
@@ -243,7 +234,7 @@ void ILI9341_Draw_Char(char Character, uint8_t X, uint8_t Y, uint16_t Colour, ui
 		ILI9341_Draw_Rectangle(X, Y, CHAR_WIDTH*Size, CHAR_HEIGHT*Size, Background_Colour);
     for (j=0; j<CHAR_WIDTH; j++) {
         for (i=0; i<CHAR_HEIGHT; i++) {
-            if (temp[j] & (1<<i)) {			
+            if (temp[j] & (1u<<i)) {
 							if(Size == 1)
 							{
               ILI9341_Draw_Pixel(X+j, Y+i, Colour);
@@ -276,86 +267,32 @@ void ILI9341_Draw_Image(const char* Image_Array, uint8_t Orientation)
 	{
 		ILI9341_Set_Rotation(SCREEN_HORIZONTAL_1);
 		ILI9341_Set_Address(0,0,ILI9341_SCREEN_WIDTH,ILI9341_SCREEN_HEIGHT);
-			
-		HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET);
-		
-		unsigned char Temp_small_buffer[BURST_MAX_SIZE];
-		uint32_t counter = 0;
-		for(uint32_t i = 0; i < ILI9341_SCREEN_WIDTH*ILI9341_SCREEN_HEIGHT*2/BURST_MAX_SIZE; i++)
-		{			
-				for(uint32_t k = 0; k< BURST_MAX_SIZE; k++)
-				{
-					Temp_small_buffer[k]	= Image_Array[counter+k];		
-				}						
-				HAL_SPI_Transmit(&HSPI_INSTANCE, (unsigned char*)Temp_small_buffer, BURST_MAX_SIZE, 10);
-				counter += BURST_MAX_SIZE;			
-		}
-		HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);
 	}
 	else if(Orientation == SCREEN_HORIZONTAL_2)
 	{
 		ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
 		ILI9341_Set_Address(0,0,ILI9341_SCREEN_WIDTH,ILI9341_SCREEN_HEIGHT);
-			
-		HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET);
-		
-		unsigned char Temp_small_buffer[BURST_MAX_SIZE];
-		uint32_t counter = 0;
-		for(uint32_t i = 0; i < ILI9341_SCREEN_WIDTH*ILI9341_SCREEN_HEIGHT*2/BURST_MAX_SIZE; i++)
-		{			
-				for(uint32_t k = 0; k< BURST_MAX_SIZE; k++)
-				{
-					Temp_small_buffer[k]	= Image_Array[counter+k];		
-				}						
-				HAL_SPI_Transmit(&HSPI_INSTANCE, (unsigned char*)Temp_small_buffer, BURST_MAX_SIZE, 10);
-				counter += BURST_MAX_SIZE;			
-		}
-		HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);
 	}
 	else if(Orientation == SCREEN_VERTICAL_2)
 	{
-		ILI9341_Set_Rotation(SCREEN_VERTICAL_2);
-		ILI9341_Set_Address(0,0,ILI9341_SCREEN_HEIGHT,ILI9341_SCREEN_WIDTH);
-			
-		HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET);
-		
-		unsigned char Temp_small_buffer[BURST_MAX_SIZE];
-		uint32_t counter = 0;
-		for(uint32_t i = 0; i < ILI9341_SCREEN_WIDTH*ILI9341_SCREEN_HEIGHT*2/BURST_MAX_SIZE; i++)
-		{			
-				for(uint32_t k = 0; k< BURST_MAX_SIZE; k++)
-				{
-					Temp_small_buffer[k]	= Image_Array[counter+k];		
-				}						
-				HAL_SPI_Transmit(&HSPI_INSTANCE, (unsigned char*)Temp_small_buffer, BURST_MAX_SIZE, 10);
-				counter += BURST_MAX_SIZE;			
-		}
-		HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);
-	}
-	else if(Orientation == SCREEN_VERTICAL_1)
-	{
-		ILI9341_Set_Rotation(SCREEN_VERTICAL_1);
-		ILI9341_Set_Address(0,0,ILI9341_SCREEN_HEIGHT,ILI9341_SCREEN_WIDTH);
-			
-		HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
-		HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET);
-		
-		unsigned char Temp_small_buffer[BURST_MAX_SIZE];
-		uint32_t counter = 0;
-		for(uint32_t i = 0; i < ILI9341_SCREEN_WIDTH*ILI9341_SCREEN_HEIGHT*2/BURST_MAX_SIZE; i++)
-		{			
-				for(uint32_t k = 0; k< BURST_MAX_SIZE; k++)
-				{
-					Temp_small_buffer[k]	= Image_Array[counter+k];		
-				}						
-				HAL_SPI_Transmit(&HSPI_INSTANCE, (unsigned char*)Temp_small_buffer, BURST_MAX_SIZE, 10);
-				counter += BURST_MAX_SIZE;			
-		}
-		HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);
-	}
+        ILI9341_Set_Rotation(SCREEN_VERTICAL_2);
+        ILI9341_Set_Address(0, 0, ILI9341_SCREEN_HEIGHT, ILI9341_SCREEN_WIDTH);
+    }
+	else if (Orientation == SCREEN_VERTICAL_1) {
+        ILI9341_Set_Rotation(SCREEN_VERTICAL_1);
+        ILI9341_Set_Address(0, 0, ILI9341_SCREEN_HEIGHT, ILI9341_SCREEN_WIDTH);
+    } else {
+        return;
+    }
+    HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET);
+
+    uint32_t counter = 0;
+    for (uint32_t i = 0; i < ILI9341_SCREEN_WIDTH * ILI9341_SCREEN_HEIGHT * 2 / BURST_MAX_SIZE; i++) {
+        HAL_SPI_Transmit(&HSPI_INSTANCE, (unsigned char *) &(Image_Array[counter]), BURST_MAX_SIZE, 10);
+        counter += BURST_MAX_SIZE;
+    }
+    HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);
 }
 
 
