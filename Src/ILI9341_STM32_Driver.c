@@ -344,7 +344,7 @@ HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);
 void ILI9341_Draw_Colour_Burst(uint16_t Colour, uint32_t Size)
 {
 //SENDS COLOUR
-uint32_t Buffer_Size = 0;
+uint32_t Buffer_Size;
 if((Size*2) < BURST_MAX_SIZE)
 {
 	Buffer_Size = Size;

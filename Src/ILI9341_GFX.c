@@ -46,6 +46,7 @@
 
 
 #include "ILI9341_STM32_Driver.h"
+#include "string.h"
 #include "5x5_font.h"
 #include "spi.h"
 
@@ -216,17 +217,11 @@ void ILI9341_Draw_Char(char Character, uint8_t X, uint8_t Y, uint16_t Colour, ui
         function_char -= 32;
 		}
    	
-		char temp[CHAR_WIDTH];
-		for(uint8_t k = 0; k<CHAR_WIDTH; k++)
-		{
-		temp[k] = font[function_char][k];
-		}
-		
     // Draw pixels
 		ILI9341_Draw_Rectangle(X, Y, CHAR_WIDTH*Size, CHAR_HEIGHT*Size, Background_Colour);
     for (j=0; j<CHAR_WIDTH; j++) {
         for (i=0; i<CHAR_HEIGHT; i++) {
-            if (temp[j] & (1u<<i)) {
+            if (font[function_char][j] & (1u<<i)) {
 							if(Size == 1)
 							{
               ILI9341_Draw_Pixel(X+j, Y+i, Colour);
@@ -242,12 +237,19 @@ void ILI9341_Draw_Char(char Character, uint8_t X, uint8_t Y, uint16_t Colour, ui
 
 /*Draws an array of characters (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
 /*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
+void ILI9341_Draw_Text_Len(const char *Text, uint8_t len, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size,
+                           uint16_t Background_Colour) {
+    for (int i = 0; i < len; i++) {
+        ILI9341_Draw_Char(Text[i], X, Y, Colour, Size, Background_Colour);
+        X += CHAR_WIDTH * Size;
+    }
+}
+
+/*Draws an array of characters (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
+/*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
 void ILI9341_Draw_Text(const char* Text, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size, uint16_t Background_Colour)
 {
-    while (*Text) {
-        ILI9341_Draw_Char(*Text++, X, Y, Colour, Size, Background_Colour);
-        X += CHAR_WIDTH*Size;
-    }
+    ILI9341_Draw_Text_Len(Text,  strlen(Text), X, Y, Colour, Size, Background_Colour);
 }
 
 /*Draws a full screen picture from flash. Image converted from RGB .jpeg/other to C array using online converter*/
