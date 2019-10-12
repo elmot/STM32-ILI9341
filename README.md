@@ -1,7 +1,7 @@
 # STM32-ILI9341
 Simple driver for ILI9341 320x240 TFT LCD with Touchscreen for STM32 microcontrollers
 
-*Improved, optimized, made hardware-independent against initial @martnak version*
+*Improved, optimized, made hardware-independent against initial [@martnak](https://github.com/martnak/STM32-ILI9341) version*
 
 Requires no DMA or Interrupts while still maintaining very fast screen draws. See performance analysis below
 
@@ -33,8 +33,11 @@ Settings:
   - STM32L476RG Nucleo board
   - Redraw entire screen
 
-  Theoretical maximum FPS with 50Mhz SPI calculated to be 40.69 FPS
+  Theoretical maximum FPS with 50Mhz SPI calculated to be 32.55 FPS
   
   320x240 = 76800 pixels, each pixel contains 16bit colour information (2x8)
-  Theoretical Max FPS: 1/((320x240x16)/50000000)
+  Theoretical Max FPS: 1/((320x240x16)/40000000)
+  
+  Actual FPS is ~16.7 (image output)
+
 
