@@ -97,7 +97,7 @@ int main(void)
   ILI9341_Init();
 
     /* USER CODE END 2 */
-    demoMultipleSegments();
+    demoImage();
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 #pragma clang diagnostic push

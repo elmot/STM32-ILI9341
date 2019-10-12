@@ -247,46 +247,59 @@ void ILI9341_Draw_Text_Len(const char *Text, uint8_t len, uint8_t X, uint8_t Y, 
 
 /*Draws an array of characters (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
 /*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
-void ILI9341_Draw_Text(const char* Text, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size, uint16_t Background_Colour)
-{
-    ILI9341_Draw_Text_Len(Text,  strlen(Text), X, Y, Colour, Size, Background_Colour);
+void
+ILI9341_Draw_Text(const char *Text, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size, uint16_t Background_Colour) {
+    ILI9341_Draw_Text_Len(Text, strlen(Text), X, Y, Colour, Size, Background_Colour);
 }
 
-/*Draws a full screen picture from flash. Image converted from RGB .jpeg/other to C array using online converter*/
-//USING CONVERTER: http://www.digole.com/tools/PicturetoC_Hex_converter.php
-//65K colour (2Bytes / Pixel)
-void ILI9341_Draw_Image(const char* Image_Array, uint8_t Orientation)
-{
-	if(Orientation == SCREEN_HORIZONTAL_1)
-	{
-		ILI9341_Set_Rotation(SCREEN_HORIZONTAL_1);
-		ILI9341_Set_Address(0,0,ILI9341_SCREEN_WIDTH,ILI9341_SCREEN_HEIGHT);
-	}
-	else if(Orientation == SCREEN_HORIZONTAL_2)
-	{
-		ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
-		ILI9341_Set_Address(0,0,ILI9341_SCREEN_WIDTH,ILI9341_SCREEN_HEIGHT);
-	}
-	else if(Orientation == SCREEN_VERTICAL_2)
-	{
-        ILI9341_Set_Rotation(SCREEN_VERTICAL_2);
-        ILI9341_Set_Address(0, 0, ILI9341_SCREEN_HEIGHT, ILI9341_SCREEN_WIDTH);
-    }
-	else if (Orientation == SCREEN_VERTICAL_1) {
-        ILI9341_Set_Rotation(SCREEN_VERTICAL_1);
-        ILI9341_Set_Address(0, 0, ILI9341_SCREEN_HEIGHT, ILI9341_SCREEN_WIDTH);
-    } else {
-        return;
-    }
+
+struct IMAGE_SEND_PARAMS {
+    const uint8_t *ptr;
+    uint32_t bytesLeft;
+};
+
+/**
+ * Function to be called from ILI9341_Draw_Box_By_Chunks
+ * @param paramBlock parameter block passed from outer function
+ * @param chunkAddress OUT chunk address
+ * @return length of the chunk, zero if out of data
+ */
+static uint16_t fillDataChunk(void *paramBlock, const unsigned char **chunkAddress) {
+    struct IMAGE_SEND_PARAMS *params = paramBlock;
+    uint32_t bytesToSend = params->bytesLeft >= 0xFFFEu ? 0xFFFEu : params->bytesLeft;
+    params->bytesLeft -= bytesToSend;
+    *chunkAddress = params->ptr;
+    params->ptr += bytesToSend;
+    return bytesToSend;
+}
+
+struct TEXT_SEND_PARAMS {
+    const char *ptr;
+    const uint8_t *size;
+    uint32_t bytesLeft;
+};
+
+void ILI9341_Draw_Box_By_Chunks(uint16_t (*nextChunk)(void *paramBlock, const uint8_t **chunkAddress), void *paramBlock,
+                                uint8_t Orientation, int x, int y, int w, int h) {
+    ILI9341_Set_Rotation(Orientation);
+    ILI9341_Set_Address(x, y, x + w - 1, y + h - 1);
     HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
     HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET);
-
-    uint32_t counter = 0;
-    for (uint32_t i = 0; i < ILI9341_SCREEN_WIDTH * ILI9341_SCREEN_HEIGHT * 2 / BURST_MAX_SIZE; i++) {
-        HAL_SPI_Transmit(&HSPI_INSTANCE, (unsigned char *) &(Image_Array[counter]), BURST_MAX_SIZE, 10);
-        counter += BURST_MAX_SIZE;
+    while (1) {
+        const uint8_t *chunkAddress;
+        int chunkSize = nextChunk(paramBlock, &chunkAddress);
+        if (chunkSize == 0) break;
+        HAL_SPI_Transmit(&HSPI_INSTANCE, (uint8_t *) chunkAddress, chunkSize, 100);
     }
     HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);
 }
 
 
+/*Draws a full screen picture from flash. Image converted from RGB .jpeg/other to C array using online converter*/
+//USING CONVERTER: http://www.digole.com/tools/PicturetoC_Hex_converter.php
+//65K colour (2Bytes / Pixel)
+void ILI9341_Draw_Image(const char *Image_Array, uint8_t Orientation) {
+    struct IMAGE_SEND_PARAMS params = {.bytesLeft= 2 * ILI9341_SCREEN_HEIGHT * ILI9341_SCREEN_WIDTH,
+            .ptr = (const uint8_t*)Image_Array};
+    ILI9341_Draw_Box_By_Chunks(fillDataChunk, &params, Orientation, 0, 0, LCD_WIDTH, LCD_HEIGHT);
+}
