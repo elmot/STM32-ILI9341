@@ -44,23 +44,21 @@
 //
 //-----------------------------------
 
-
 #include "ILI9341_STM32_Driver.h"
-#include "string.h"
+#include "ILI9341_GFX.h"
+#include <string.h>
 #include "5x5_font.h"
 #include "spi.h"
 
 /*Draw hollow circle at X,Y location with specified radius and colour. X and Y represent circles center */
-void ILI9341_Draw_Hollow_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_t Colour)
-{
-	int x = Radius-1;
+void ILI9341_Draw_Hollow_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_t Colour) {
+    int x = Radius - 1;
     int y = 0;
     int dx = 1;
     int dy = 1;
     int err = dx - (Radius << 1u);
 
-    while (x >= y)
-    {
+    while (x >= y) {
         ILI9341_Draw_Pixel(X + x, Y + y, Colour);
         ILI9341_Draw_Pixel(X + y, Y + x, Colour);
         ILI9341_Draw_Pixel(X - y, Y + x, Colour);
@@ -110,8 +108,6 @@ void ILI9341_Draw_Filled_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_
             xChange += 2;
         }
     }
-
-		//TODO: check if 	https://stackoverflow.com/questions/1201200/fast-algorithm-for-drawing-filled-circles is faster
 }
 
 /*Draw a hollow rectangle between positions X0,Y0 and X1,Y1 with specified colour*/
@@ -203,37 +199,6 @@ void ILI9341_Draw_Filled_Rectangle_Coord(uint16_t X0, uint16_t Y0, uint16_t X1, 
 	ILI9341_Draw_Rectangle(X0_true, Y0_true, X_length, Y_length, Colour);	
 }
 
-/*Draws a character (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
-/*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
-void ILI9341_Draw_Char(char Character, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size, uint16_t Background_Colour) 
-{
-		uint8_t 	function_char;
-    uint8_t 	i,j;
-		
-		function_char = Character;
-		
-    if (function_char < ' ') {
-    } else {
-        function_char -= 32;
-		}
-   	
-    // Draw pixels
-		ILI9341_Draw_Rectangle(X, Y, CHAR_WIDTH*Size, CHAR_HEIGHT*Size, Background_Colour);
-    for (j=0; j<CHAR_WIDTH; j++) {
-        for (i=0; i<CHAR_HEIGHT; i++) {
-            if (font[function_char][j] & (1u<<i)) {
-							if(Size == 1)
-							{
-              ILI9341_Draw_Pixel(X+j, Y+i, Colour);
-							}
-							else
-							{
-							ILI9341_Draw_Rectangle(X+(j*Size), Y+(i*Size), Size, Size, Colour);
-							}
-            }						
-        }
-    }
-}
 
 /*Draws an array of characters (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
 /*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
@@ -258,30 +223,8 @@ struct IMAGE_SEND_PARAMS {
     uint32_t bytesLeft;
 };
 
-/**
- * Function to be called from ILI9341_Draw_Box_By_Chunks
- * @param paramBlock parameter block passed from outer function
- * @param chunkAddress OUT chunk address
- * @return length of the chunk, zero if out of data
- */
-static uint16_t fillDataChunk(void *paramBlock, const unsigned char **chunkAddress) {
-    struct IMAGE_SEND_PARAMS *params = paramBlock;
-    uint32_t bytesToSend = params->bytesLeft >= 0xFFFEu ? 0xFFFEu : params->bytesLeft;
-    params->bytesLeft -= bytesToSend;
-    *chunkAddress = params->ptr;
-    params->ptr += bytesToSend;
-    return bytesToSend;
-}
-
-struct TEXT_SEND_PARAMS {
-    const char *ptr;
-    const uint8_t *size;
-    uint32_t bytesLeft;
-};
-
 void ILI9341_Draw_Box_By_Chunks(uint16_t (*nextChunk)(void *paramBlock, const uint8_t **chunkAddress), void *paramBlock,
-                                uint8_t Orientation, int x, int y, int w, int h) {
-    ILI9341_Set_Rotation(Orientation);
+                                int x, int y, int w, int h) {
     ILI9341_Set_Address(x, y, x + w - 1, y + h - 1);
     HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
     HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET);
@@ -294,12 +237,75 @@ void ILI9341_Draw_Box_By_Chunks(uint16_t (*nextChunk)(void *paramBlock, const ui
     HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);
 }
 
+/**
+ * Function to be called from ILI9341_Draw_Box_By_Chunks
+ * @param paramBlock parameter block passed from outer function
+ * @param chunkAddress OUT chunk address
+ * @return length of the chunk, zero if out of data
+ */
+static uint16_t imageDataChunk(void *paramBlock, const unsigned char **chunkAddress) {
+    struct IMAGE_SEND_PARAMS *params = paramBlock;
+    uint32_t bytesToSend = params->bytesLeft >= 0xFFFEu ? 0xFFFEu : params->bytesLeft;
+    params->bytesLeft -= bytesToSend;
+    *chunkAddress = params->ptr;
+    params->ptr += bytesToSend;
+    return bytesToSend;
+}
 
 /*Draws a full screen picture from flash. Image converted from RGB .jpeg/other to C array using online converter*/
 //USING CONVERTER: http://www.digole.com/tools/PicturetoC_Hex_converter.php
 //65K colour (2Bytes / Pixel)
 void ILI9341_Draw_Image(const char *Image_Array, uint8_t Orientation) {
+    ILI9341_Set_Rotation(Orientation);
     struct IMAGE_SEND_PARAMS params = {.bytesLeft= 2 * ILI9341_SCREEN_HEIGHT * ILI9341_SCREEN_WIDTH,
-            .ptr = (const uint8_t*)Image_Array};
-    ILI9341_Draw_Box_By_Chunks(fillDataChunk, &params, Orientation, 0, 0, LCD_WIDTH, LCD_HEIGHT);
+            .ptr = (const uint8_t *) Image_Array};
+    ILI9341_Draw_Box_By_Chunks(imageDataChunk, &params, 0, 0, LCD_WIDTH, LCD_HEIGHT);
+}
+
+struct TEXT_SEND_PARAMS {
+    const unsigned char *symbolFontBytes;
+    const uint8_t size;
+    const uint16_t color;
+    const uint16_t bgColor;
+    uint32_t yIndex;
+    uint16_t *const buff;
+};
+
+static uint16_t charDataChunk(void *paramBlock, const unsigned char **chunkAddress) {
+    struct TEXT_SEND_PARAMS *params = paramBlock;
+    if ((params->yIndex % params->size) == 0) {
+        uint16_t pixelYIndex = params->yIndex / params->size;
+        if (pixelYIndex >= CHAR_HEIGHT) {
+            return 0;
+        }
+        uint8_t bitMask = 1u << pixelYIndex;
+        for (int i = 0; i < CHAR_WIDTH; i++) {
+            uint16_t color = (params->symbolFontBytes[i] & bitMask) ? params->color : params->bgColor;
+            for (int j = params->size - 1; j >= 0; j--) {
+                params->buff[i * params->size + j] = color;
+            }
+        }
+    }
+    *chunkAddress = (const unsigned char *) params->buff;
+    params->yIndex++;
+    return CHAR_WIDTH * params->size * 2;
+}
+/*Draws a character (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
+/*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
+void ILI9341_Draw_Char(char Character, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size,
+        uint16_t Background_Colour) {
+    size_t buffSize = CHAR_WIDTH * Size;
+    uint16_t buff[buffSize];
+    uint8_t c = Character >= 32 ? (Character - 32) : '?';
+    uint16_t swapColour = (Colour >> 8u) | (Colour << 8u);
+    uint16_t swapBgColour = (Background_Colour >> 8u) | (Background_Colour << 8u);
+    struct TEXT_SEND_PARAMS textSendParams = {
+            .bgColor= swapBgColour,
+            .yIndex = 0,
+            .color= swapColour,
+            .size = Size,
+            .buff = buff,
+            .symbolFontBytes = font[c]
+    };
+    ILI9341_Draw_Box_By_Chunks(charDataChunk, &textSendParams, X, Y, CHAR_WIDTH * Size, CHAR_HEIGHT * Size);
 }
