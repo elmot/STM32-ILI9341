@@ -216,15 +216,15 @@ struct IMAGE_SEND_PARAMS {
 void ILI9341_Draw_Box_By_Chunks(uint16_t (*nextChunk)(void *paramBlock, const uint8_t **chunkAddress), void *paramBlock,
                                 int x, int y, int w, int h) {
     ILI9341_Set_Address(x, y, x + w - 1, y + h - 1);
-    HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET);
+   ILI9341_dcOn();
+   ILI9341_csOff();
     while (1) {
         const uint8_t *chunkAddress;
         int chunkSize = nextChunk(paramBlock, &chunkAddress);
         if (chunkSize == 0) break;
-        HAL_SPI_Transmit(&HSPI_INSTANCE, (uint8_t *) chunkAddress, chunkSize, 100);
+        ILI9341_transmit( (uint8_t *) chunkAddress, chunkSize);
     }
-    HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);
+    ILI9341_csOn();
 }
 
 /**

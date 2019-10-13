@@ -145,12 +145,42 @@ void ILI9341_Draw_Colour_Burst(uint16_t Colour, uint32_t Size);
 
 
 void ILI9341_Draw_Rectangle(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint16_t Colour);
+
 void ILI9341_Draw_Horizontal_Line(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Colour);
+
 void ILI9341_Draw_Vertical_Line(uint16_t X, uint16_t Y, uint16_t Height, uint16_t Colour);
 
 extern volatile uint16_t LCD_HEIGHT;
 
 extern volatile uint16_t LCD_WIDTH;
+
+static inline void ILI9341_csOn() {
+    HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);
+}
+
+static inline void ILI9341_csOff() {
+    HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_RESET);
+}
+
+static inline void ILI9341_dcOn() {
+    HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_SET);
+}
+
+static inline void ILI9341_dcOff() {
+    HAL_GPIO_WritePin(LCD_DC_GPIO_Port, LCD_DC_Pin, GPIO_PIN_RESET);
+}
+
+static inline void ILI9341_rstOn() {
+    HAL_GPIO_WritePin(LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET);
+}
+
+static inline void ILI9341_rstOff() {
+    HAL_GPIO_WritePin(LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_RESET);
+}
+
+static inline void ILI9341_transmit(uint8_t *data, uint16_t len) {
+    HAL_SPI_Transmit(&HSPI_INSTANCE, (uint8_t *) data, len, 100);
+}
 
 #endif
 
