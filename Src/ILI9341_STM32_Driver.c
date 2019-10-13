@@ -132,9 +132,9 @@ ILI9341_Write_Command(0x2C);
 /*HARDWARE RESET*/
 void ILI9341_Reset(void) {
     ILI9341_rstOff();
-    HAL_Delay(200);
+    LL_mDelay(200);
     ILI9341_csOff();
-    HAL_Delay(200);
+    LL_mDelay(200);
     ILI9341_rstOn();
 }
 
@@ -145,7 +145,7 @@ void ILI9341_Set_Rotation(uint8_t Rotation)
 uint8_t screen_rotation = Rotation;
 
 ILI9341_Write_Command(0x36);
-HAL_Delay(1);
+LL_mDelay(1);
 	
 switch(screen_rotation) 
 	{
@@ -178,7 +178,7 @@ switch(screen_rotation)
 /*Enable LCD display*/
 void ILI9341_Enable(void)
 {
-HAL_GPIO_WritePin(LCD_RST_GPIO_Port, LCD_RST_Pin, GPIO_PIN_SET);
+    ILI9341_rstOn();
 }
 
 /*Initialize LCD display*/
@@ -191,7 +191,7 @@ ILI9341_Reset();
 
 //SOFTWARE RESET
 ILI9341_Write_Command(0x01);
-HAL_Delay(1000);
+LL_mDelay(1000);
 	
 //POWER CONTROL A
 ILI9341_Write_Command(0xCB);
@@ -311,7 +311,7 @@ ILI9341_Write_Data(0x0F);
 
 //EXIT SLEEP
 ILI9341_Write_Command(0x11);
-HAL_Delay(120);
+LL_mDelay(120);
 
 //TURN ON DISPLAY
 ILI9341_Write_Command(0x29);

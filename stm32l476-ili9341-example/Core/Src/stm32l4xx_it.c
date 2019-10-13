@@ -52,7 +52,7 @@
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+volatile uint64_t timerTicks = 0;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -182,9 +182,9 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
   /* USER CODE BEGIN SysTick_IRQn 0 */
-
+    timerTicks++;
   /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
+  
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
   /* USER CODE END SysTick_IRQn 1 */
@@ -198,6 +198,12 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /* USER CODE BEGIN 1 */
-
+uint64_t getSysTicks() {
+    uint64_t t;
+    __disable_irq();
+    t = timerTicks;
+    __enable_irq();
+    return t;
+}
 /* USER CODE END 1 */
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

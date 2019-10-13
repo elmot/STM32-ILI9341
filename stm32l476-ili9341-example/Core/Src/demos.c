@@ -17,7 +17,7 @@ void demoPixels() {
     ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
     ILI9341_Draw_Text("Random position and colour", 10, 10, BLACK, 1, WHITE);
     ILI9341_Draw_Text("500000 pixels", 10, 20, BLACK, 1, WHITE);
-    HAL_Delay(2000);
+    LL_mDelay(2000);
     ILI9341_Fill_Screen(WHITE);
 
 
@@ -35,7 +35,7 @@ void demoPixels() {
         yr &= 0x01FFu;
         ILI9341_Draw_Pixel(xr, yr, color);
     }
-    HAL_Delay(2000);
+    LL_mDelay(2000);
 }
 
 /**
@@ -46,7 +46,7 @@ void demoLines() {
     ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
     ILI9341_Draw_Text("Randomly placed and sized", 10, 10, BLACK, 1, WHITE);
     ILI9341_Draw_Text("Horizontal and Vertical lines", 10, 20, BLACK, 1, WHITE);
-    HAL_Delay(2000);
+    LL_mDelay(2000);
     ILI9341_Fill_Screen(WHITE);
 
     for (uint32_t i = 0; i < 30000; i++) {
@@ -72,7 +72,7 @@ void demoLines() {
         ILI9341_Draw_Vertical_Line(xr, yr, radiusr, colourr);
     }
 
-    HAL_Delay(1000);
+    LL_mDelay(1000);
 }
 
 static char Temp_Buffer_text[40];
@@ -84,9 +84,9 @@ void demoMultipleSegments() {
     ILI9341_Fill_Screen(WHITE);
     ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
     ILI9341_Draw_Text("Counting multiple segments at once", 10, 10, BLACK, 1, WHITE);
-    HAL_Delay(2000);
+    LL_mDelay(2000);
     ILI9341_Fill_Screen(WHITE);
-    uint32_t t = HAL_GetTick();
+    uint32_t t = getSysTicks();
 
     for (uint16_t i = 0; i <= 100; i++) {
         sprintf(Temp_Buffer_text, "Counting: %d", i);
@@ -103,11 +103,11 @@ void demoMultipleSegments() {
         ILI9341_Draw_Text(Temp_Buffer_text, 10, 210, RED, 2, BLACK);
     }
     char buf[100];
-    snprintf(buf, 99, "Segm.PS: %.2f",100* 11.0 / ((HAL_GetTick() - t) / 1000.0));
+    snprintf(buf, 99, "Segm.PS: %.2f",100* 11.0 / ((getSysTicks() - t) / 1000.0));
     ILI9341_Draw_Text(buf, 20, 2, YELLOW, 1, DARKCYAN);
-    HAL_Delay(10000);
+    LL_mDelay(10000);
 
-    HAL_Delay(1000);
+    LL_mDelay(1000);
 }
 
 /**
@@ -118,10 +118,10 @@ void perfTest() {
     ILI9341_Fill_Screen(WHITE);
     ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
     ILI9341_Draw_Text("FPS TEST, 30 loop 2 screens", 3, 2, BLACK, 1, WHITE);
-    HAL_Delay(2000);
+    LL_mDelay(2000);
     ILI9341_Fill_Screen(WHITE);
 
-    uint32_t Timer_Counter = HAL_GetTick();
+    uint32_t Timer_Counter = getSysTicks();
     for (uint32_t j = 0; j < 2; j++) {
         for (uint16_t i = 0; i < 30; i++) {
             ILI9341_Fill_Screen(WHITE);
@@ -129,7 +129,7 @@ void perfTest() {
         }
 
     }
-    Timer_Counter = HAL_GetTick() - Timer_Counter;
+    Timer_Counter = getSysTicks() - Timer_Counter;
 
     char counter_buff[30];
     ILI9341_Fill_Screen(WHITE);
@@ -151,7 +151,7 @@ void perfTest() {
     double SPI_utilized_percentage = (MB_PS / (5.0)) * 100;        //40mbps / 8 bits
     sprintf(counter_buff, "SPI Utilized: %.2f", SPI_utilized_percentage);
     ILI9341_Draw_Text(counter_buff, 10, 90, BLACK, 2, WHITE);
-    HAL_Delay(10000);
+    LL_mDelay(10000);
 
 }
 
@@ -163,15 +163,15 @@ void demoImage() {
     ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
     ILI9341_Draw_Text("RGB Picture", 10, 10, BLACK, 1, WHITE);
     ILI9341_Draw_Text("TIGER", 10, 20, BLACK, 1, WHITE);
-    HAL_Delay(2000);
-    uint32_t t = HAL_GetTick();
+    LL_mDelay(2000);
+    uint32_t t = getSysTicks();
     for(int i = 0;i <10;i++) {
         ILI9341_Draw_Image((const char *) snow_tiger, SCREEN_VERTICAL_2);
     }
     char buf[100];
-    snprintf(buf, 99, "FPS: %.2f", 10.0 / ((HAL_GetTick() - t) / 1000.0));
+    snprintf(buf, 99, "FPS: %.2f", 10.0 / ((getSysTicks() - t) / 1000.0));
     ILI9341_Draw_Text(buf, 2, 2, YELLOW, 3, DARKCYAN);
-    HAL_Delay(10000);
+    LL_mDelay(10000);
 }
 
 /**
@@ -183,7 +183,7 @@ void demoIndividualPixel() {
     ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
     ILI9341_Draw_Text("Slow draw by selecting", 10, 10, BLACK, 1, WHITE);
     ILI9341_Draw_Text("and adressing pixels", 10, 20, BLACK, 1, WHITE);
-    HAL_Delay(2000);
+    LL_mDelay(2000);
     ILI9341_Fill_Screen(WHITE);
 
 
@@ -220,7 +220,7 @@ void demoIndividualPixel() {
         y++;
         x = 0;
     }
-    HAL_Delay(2000);
+    LL_mDelay(2000);
 }
 
 /**
@@ -231,7 +231,7 @@ void demoGrayscale() {
     ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
     ILI9341_Draw_Text("Colour gradient", 10, 10, BLACK, 1, WHITE);
     ILI9341_Draw_Text("Grayscale", 10, 20, BLACK, 1, WHITE);
-    HAL_Delay(2000);
+    LL_mDelay(2000);
 
 
     for (uint16_t i = 0; i <= (320); i++) {
@@ -250,7 +250,7 @@ void demoGrayscale() {
         ILI9341_Draw_Rectangle(i, 0, 1, 240, RGB_color);
 
     }
-    HAL_Delay(2000);
+    LL_mDelay(2000);
 }
 
 /**
@@ -260,13 +260,13 @@ void demoAlignment() {
     ILI9341_Fill_Screen(WHITE);
     ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
     ILI9341_Draw_Text("Rectangle alignment check", 10, 10, BLACK, 1, WHITE);
-    HAL_Delay(2000);
+    LL_mDelay(2000);
     ILI9341_Fill_Screen(WHITE);
 
     ILI9341_Draw_Hollow_Rectangle_Coord(50, 50, 100, 100, BLACK);
     ILI9341_Draw_Filled_Rectangle_Coord(20, 20, 50, 50, BLACK);
     ILI9341_Draw_Hollow_Rectangle_Coord(10, 10, 19, 19, BLACK);
-    HAL_Delay(1000);
+    LL_mDelay(1000);
 }
 
 /**
@@ -276,7 +276,7 @@ void demoSingleSegment() {
     ILI9341_Fill_Screen(WHITE);
     ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
     ILI9341_Draw_Text("Counting single segment", 10, 10, BLACK, 1, WHITE);
-    HAL_Delay(2000);
+    LL_mDelay(2000);
     ILI9341_Fill_Screen(WHITE);
 
     for (uint16_t i = 0; i <= 100; i++) {
@@ -284,7 +284,7 @@ void demoSingleSegment() {
         ILI9341_Draw_Text(Temp_Buffer_text, 10, 10, BLACK, 3, WHITE);
     }
 
-    HAL_Delay(1000);
+    LL_mDelay(1000);
 }
 
 /**
@@ -295,9 +295,9 @@ void demoFilledCircles() {
     ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
     ILI9341_Draw_Text("Randomly placed and sized", 10, 10, BLACK, 1, WHITE);
     ILI9341_Draw_Text("Filled Circles", 10, 20, BLACK, 1, WHITE);
-    HAL_Delay(2000);
+    LL_mDelay(2000);
     ILI9341_Fill_Screen(WHITE);
-    uint32_t t = HAL_GetTick();
+    uint32_t t = getSysTicks();
     for (uint32_t i = 0; i < 1000; i++) {
         uint32_t random_num = 0;
         uint16_t xr = 0;
@@ -320,10 +320,10 @@ void demoFilledCircles() {
         ILI9341_Draw_Filled_Circle(xr, yr, radiusr / 2, colourr);
     }
     char buf[100];
-    snprintf(buf, 99, "CircPS: %.2f", 1000.0 / ((HAL_GetTick() - t) / 1000.0));
+    snprintf(buf, 99, "CircPS: %.2f", 1000.0 / ((getSysTicks() - t) / 1000.0));
     ILI9341_Draw_Text(buf, 2, 2, YELLOW, 3, DARKCYAN);
-    HAL_Delay(10000);
-    HAL_Delay(1000);
+    LL_mDelay(10000);
+    LL_mDelay(1000);
 }
 
 /**
@@ -334,7 +334,7 @@ void demoFilledRectangles() {
     ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
     ILI9341_Draw_Text("Randomly placed and sized", 10, 10, BLACK, 1, WHITE);
     ILI9341_Draw_Text("Filled Rectangles", 10, 20, BLACK, 1, WHITE);
-    HAL_Delay(2000);
+    LL_mDelay(2000);
     ILI9341_Fill_Screen(WHITE);
 
     for (uint32_t i = 0; i < 20000; i++) {
@@ -344,7 +344,7 @@ void demoFilledRectangles() {
         uint16_t colourr = random();
         ILI9341_Draw_Rectangle(xr, yr, radiusr, radiusr, colourr);
     }
-    HAL_Delay(1000);
+    LL_mDelay(1000);
 }
 
 /**
@@ -355,7 +355,7 @@ void demoHollowRectangles() {
     ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
     ILI9341_Draw_Text("Randomly placed and sized", 10, 10, BLACK, 1, WHITE);
     ILI9341_Draw_Text("Rectangles", 10, 20, BLACK, 1, WHITE);
-    HAL_Delay(2000);
+    LL_mDelay(2000);
     ILI9341_Fill_Screen(WHITE);
 
     for (uint32_t i = 0; i < 20000; i++) {
@@ -379,7 +379,7 @@ void demoHollowRectangles() {
         //ili9341_drawpixel(xr, yr, WHITE);
         ILI9341_Draw_Hollow_Rectangle_Coord(xr, yr, xr + radiusr, yr + radiusr, colourr);
     }
-    HAL_Delay(1000);
+    LL_mDelay(1000);
 }
 
 /**
@@ -390,7 +390,7 @@ void demoHollowCircles() {
     ILI9341_Set_Rotation(SCREEN_HORIZONTAL_2);
     ILI9341_Draw_Text("Randomly placed and sized", 10, 10, BLACK, 1, WHITE);
     ILI9341_Draw_Text("Circles", 10, 20, BLACK, 1, WHITE);
-    HAL_Delay(2000);
+    LL_mDelay(2000);
     ILI9341_Fill_Screen(WHITE);
 
 
@@ -415,7 +415,7 @@ void demoHollowCircles() {
         //ili9341_drawpixel(xr, yr, WHITE);
         ILI9341_Draw_Hollow_Circle(xr, yr, radiusr * 2, colourr);
     }
-    HAL_Delay(1000);
+    LL_mDelay(1000);
 }
 
 

@@ -85,9 +85,16 @@
 #define ILI9341_STM32_DRIVER_H
 
 #include "main.h"
+
+#ifdef USE_HAL_DRIVER
 #ifndef HSPI_INSTANCE
- #error HSPI_INSTANCE must be defined as hspi<n> in main.h
-#endif
+#error HSPI_INSTANCE must be defined as hspi<n> in main.h
+#endif //HSPI_INSTANCE
+#else //USE_HA:_DRIVER
+#ifndef LCD_SPI
+#error LCD_SPI must be defined as SPI<n> in main.h
+#endif //LCD_SPI
+#endif //USE_HA:_DRIVER
 
 #if  !defined(LCD_CS_GPIO_Port) || !defined(LCD_CS_Pin) || \
       !defined(LCD_DC_GPIO_Port) || !defined(LCD_DC_Pin) || \
@@ -95,7 +102,9 @@
 #error Pins named LCD_CS, LCD_DC, LCD_RST, must be defined in STM32CubeMX as GPIO OUT
 #endif
 
+#ifdef USE_HAL_DRIVER
 extern SPI_HandleTypeDef HSPI_INSTANCE;
+#endif //USE_HAL_DRIVER
 
 #define ILI9341_SCREEN_HEIGHT 240 
 #define ILI9341_SCREEN_WIDTH 	320
@@ -154,6 +163,7 @@ extern volatile uint16_t LCD_HEIGHT;
 
 extern volatile uint16_t LCD_WIDTH;
 
+#ifdef USE_HAL_DRIVER
 static inline void ILI9341_csOn() {
     HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);
 }
@@ -181,6 +191,61 @@ static inline void ILI9341_rstOff() {
 static inline void ILI9341_transmit(uint8_t *data, uint16_t len) {
     HAL_SPI_Transmit(&HSPI_INSTANCE, (uint8_t *) data, len, 100);
 }
+#else //USE_HAL_DRIVER
+static inline void ILI9341_csOn() {
+    LL_GPIO_SetOutputPin(LCD_CS_GPIO_Port, LCD_CS_Pin);
+}
+
+static inline void ILI9341_csOff() {
+    LL_GPIO_ResetOutputPin(LCD_CS_GPIO_Port, LCD_CS_Pin);
+}
+
+static inline void ILI9341_dcOn() {
+    LL_GPIO_SetOutputPin(LCD_DC_GPIO_Port, LCD_DC_Pin);
+}
+
+static inline void ILI9341_dcOff() {
+    LL_GPIO_ResetOutputPin(LCD_DC_GPIO_Port, LCD_DC_Pin);
+}
+
+static inline void ILI9341_rstOn() {
+    LL_GPIO_SetOutputPin(LCD_RST_GPIO_Port, LCD_RST_Pin);
+}
+
+static inline void ILI9341_rstOff() {
+    LL_GPIO_ResetOutputPin(LCD_RST_GPIO_Port, LCD_RST_Pin);
+}
+
+static inline void ILI9341_transmit(uint8_t *data, uint16_t len) {
+//    HAL_SPI_Transmit(&HSPI_INSTANCE, (uint8_t *) data, len, 100);
+
+
+    LL_SPI_SetTransferDirection(LCD_SPI, LL_SPI_FULL_DUPLEX);
+
+    /* Enable SPI before start transmission */
+    LL_SPI_Enable(LCD_SPI);
+
+    while(len > 0)
+    {
+        /* Check TXE flag to transmit data */
+        while(!LL_SPI_IsActiveFlag_TXE(LCD_SPI)){}
+        /* Transmit 8bit Data */
+        LL_SPI_TransmitData8(LCD_SPI, *data);
+        data++;
+        len--;
+    }
+
+    /* Wait End Of Transmission: TXE set and Tx Fifo empty */
+    while((LL_SPI_IsActiveFlag_TXE(LCD_SPI) != 1));
+    while(LL_SPI_GetTxFIFOLevel(LCD_SPI) != LL_SPI_TX_FIFO_EMPTY);
+
+    /* Disable SPI after End of Transmission */
+    LL_SPI_Disable(LCD_SPI);
+
+
+}
+
+#endif//USE_HAL_DRIVER
 
 #endif
 
