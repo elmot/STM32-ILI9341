@@ -300,6 +300,10 @@ void ILI9341_Draw_Char(char Character, uint8_t X, uint8_t Y, uint16_t Colour, ui
 /*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
 void ILI9341_Draw_Text_Len(const char *Text, uint8_t Len, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size,
                            uint16_t Background_Colour) {
+    int lenLimit = (LCD_WIDTH - X) / (CHAR_WIDTH * Size);
+    if (lenLimit < Len) {
+        Len = lenLimit;
+    }
     size_t buffSize = CHAR_WIDTH * Len * Size;
     uint16_t buff[buffSize];
     uint16_t swapColour = (Colour >> 8u) | (Colour << 8u);
