@@ -158,23 +158,23 @@ switch(screen_rotation)
 	{
 		case SCREEN_VERTICAL_1:
 			ILI9341_Write_Data(0x40u|0x08u);
-			LCD_WIDTH = 240;
-			LCD_HEIGHT = 320;
+			LCD_WIDTH = ILI9341_SCREEN_HEIGHT;
+			LCD_HEIGHT = ILI9341_SCREEN_WIDTH;
 			break;
 		case SCREEN_HORIZONTAL_1:
 			ILI9341_Write_Data(0x20u|0x08u);
-			LCD_WIDTH  = 320;
-			LCD_HEIGHT = 240;
+			LCD_WIDTH  = ILI9341_SCREEN_WIDTH;
+			LCD_HEIGHT = ILI9341_SCREEN_HEIGHT;
 			break;
 		case SCREEN_VERTICAL_2:
 			ILI9341_Write_Data(0x80u|0x08u);
-			LCD_WIDTH  = 240;
-			LCD_HEIGHT = 320;
+			LCD_WIDTH  = ILI9341_SCREEN_HEIGHT;
+			LCD_HEIGHT = ILI9341_SCREEN_WIDTH;
 			break;
 		case SCREEN_HORIZONTAL_2:
 			ILI9341_Write_Data(0x40u|0x80u|0x20u|0x08u);
-			LCD_WIDTH  = 320;
-			LCD_HEIGHT = 240;
+			LCD_WIDTH  = ILI9341_SCREEN_WIDTH;
+			LCD_HEIGHT = ILI9341_SCREEN_HEIGHT;
 			break;
 		default:
 			//EXIT IF SCREEN ROTATION NOT VALID!
@@ -344,7 +344,7 @@ HAL_GPIO_WritePin(LCD_CS_GPIO_Port, LCD_CS_Pin, GPIO_PIN_SET);
 void ILI9341_Draw_Colour_Burst(uint16_t Colour, uint32_t Size)
 {
 //SENDS COLOUR
-uint32_t Buffer_Size = 0;
+uint32_t Buffer_Size;
 if((Size*2) < BURST_MAX_SIZE)
 {
 	Buffer_Size = Size;

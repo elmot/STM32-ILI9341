@@ -147,6 +147,10 @@ void ILI9341_Draw_Colour_Burst(uint16_t Colour, uint32_t Size);
 void ILI9341_Draw_Rectangle(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, uint16_t Colour);
 void ILI9341_Draw_Horizontal_Line(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Colour);
 void ILI9341_Draw_Vertical_Line(uint16_t X, uint16_t Y, uint16_t Height, uint16_t Colour);
-	
+
+extern volatile uint16_t LCD_HEIGHT;
+
+extern volatile uint16_t LCD_WIDTH;
+
 #endif
 

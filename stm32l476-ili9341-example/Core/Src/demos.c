@@ -86,9 +86,9 @@ void demoMultipleSegments() {
     ILI9341_Draw_Text("Counting multiple segments at once", 10, 10, BLACK, 1, WHITE);
     HAL_Delay(2000);
     ILI9341_Fill_Screen(WHITE);
+    uint32_t t = HAL_GetTick();
 
-
-    for (uint16_t i = 0; i <= 10; i++) {
+    for (uint16_t i = 0; i <= 100; i++) {
         sprintf(Temp_Buffer_text, "Counting: %d", i);
         ILI9341_Draw_Text(Temp_Buffer_text, 10, 10, BLACK, 2, WHITE);
         ILI9341_Draw_Text(Temp_Buffer_text, 10, 30, BLUE, 2, WHITE);
@@ -102,6 +102,10 @@ void demoMultipleSegments() {
         ILI9341_Draw_Text(Temp_Buffer_text, 10, 190, BLUE, 2, BLACK);
         ILI9341_Draw_Text(Temp_Buffer_text, 10, 210, RED, 2, BLACK);
     }
+    char buf[100];
+    snprintf(buf, 99, "Segm.PS: %.2f",100* 11.0 / ((HAL_GetTick() - t) / 1000.0));
+    ILI9341_Draw_Text(buf, 20, 2, YELLOW, 1, DARKCYAN);
+    HAL_Delay(10000);
 
     HAL_Delay(1000);
 }
@@ -334,24 +338,10 @@ void demoFilledRectangles() {
     ILI9341_Fill_Screen(WHITE);
 
     for (uint32_t i = 0; i < 20000; i++) {
-        uint32_t random_num = 0;
-        uint16_t xr = 0;
-        uint16_t yr = 0;
-        uint16_t radiusr = 0;
-        uint16_t colourr = 0;
-        random_num = random();
-        xr = random_num;
-        random_num = random();
-        yr = random_num;
-        random_num = random();
-        radiusr = random_num;
-        random_num = random();
-        colourr = random_num;
-
-        xr &= 0x01FFu;
-        yr &= 0x01FFu;
-        radiusr &= 0x001Fu;
-        //ili9341_drawpixel(xr, yr, WHITE);
+        uint16_t xr = random() % ILI9341_SCREEN_WIDTH;
+        uint16_t yr = random() % ILI9341_SCREEN_HEIGHT;
+        uint16_t radiusr = random() % ILI9341_SCREEN_HEIGHT /10;
+        uint16_t colourr = random();
         ILI9341_Draw_Rectangle(xr, yr, radiusr, radiusr, colourr);
     }
     HAL_Delay(1000);
