@@ -88,7 +88,7 @@ void demoMultipleSegments() {
     ILI9341_Fill_Screen(WHITE);
     uint32_t t = HAL_GetTick();
 
-    for (uint16_t i = 0; i <= 10; i++) {
+    for (uint16_t i = 0; i <= 100; i++) {
         sprintf(Temp_Buffer_text, "Counting: %d", i);
         ILI9341_Draw_Text(Temp_Buffer_text, 10, 10, BLACK, 2, WHITE);
         ILI9341_Draw_Text(Temp_Buffer_text, 10, 30, BLUE, 2, WHITE);
@@ -103,7 +103,7 @@ void demoMultipleSegments() {
         ILI9341_Draw_Text(Temp_Buffer_text, 10, 210, RED, 2, BLACK);
     }
     char buf[100];
-    snprintf(buf, 99, "Segm.PS: %.2f",10* 11.0 / ((HAL_GetTick() - t) / 1000.0));
+    snprintf(buf, 99, "Segm.PS: %.2f",100* 11.0 / ((HAL_GetTick() - t) / 1000.0));
     ILI9341_Draw_Text(buf, 20, 2, YELLOW, 1, DARKCYAN);
     HAL_Delay(10000);
 

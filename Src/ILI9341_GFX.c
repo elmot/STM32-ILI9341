@@ -202,16 +202,6 @@ void ILI9341_Draw_Filled_Rectangle_Coord(uint16_t X0, uint16_t Y0, uint16_t X1, 
 
 /*Draws an array of characters (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
 /*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
-void ILI9341_Draw_Text_Len(const char *Text, uint8_t len, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size,
-                           uint16_t Background_Colour) {
-    for (int i = 0; i < len; i++) {
-        ILI9341_Draw_Char(Text[i], X, Y, Colour, Size, Background_Colour);
-        X += CHAR_WIDTH * Size;
-    }
-}
-
-/*Draws an array of characters (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
-/*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
 void
 ILI9341_Draw_Text(const char *Text, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size, uint16_t Background_Colour) {
     ILI9341_Draw_Text_Len(Text, strlen(Text), X, Y, Colour, Size, Background_Colour);
@@ -263,15 +253,18 @@ void ILI9341_Draw_Image(const char *Image_Array, uint8_t Orientation) {
 }
 
 struct TEXT_SEND_PARAMS {
-    const unsigned char *symbolFontBytes;
+    const char *str;
+    const int strLen;
+
     const uint8_t size;
     const uint16_t color;
     const uint16_t bgColor;
     uint32_t yIndex;
     uint16_t *const buff;
+    const int buffSize;
 };
 
-static uint16_t charDataChunk(void *paramBlock, const unsigned char **chunkAddress) {
+static uint16_t textDataChunk(void *paramBlock, const unsigned char **chunkAddress) {
     struct TEXT_SEND_PARAMS *params = paramBlock;
     if ((params->yIndex % params->size) == 0) {
         uint16_t pixelYIndex = params->yIndex / params->size;
@@ -279,24 +272,36 @@ static uint16_t charDataChunk(void *paramBlock, const unsigned char **chunkAddre
             return 0;
         }
         uint8_t bitMask = 1u << pixelYIndex;
-        for (int i = 0; i < CHAR_WIDTH; i++) {
-            uint16_t color = (params->symbolFontBytes[i] & bitMask) ? params->color : params->bgColor;
-            for (int j = params->size - 1; j >= 0; j--) {
-                params->buff[i * params->size + j] = color;
+        for (int charIdx = 0, wordIdx = 0; charIdx < params->strLen; charIdx++) {
+            unsigned char c = params->str[charIdx];
+            c = ((c < 32) ? '?' : c) - 32;
+            const unsigned char *symbolFontBytes = font[c];
+            for (int dotIdx = 0; dotIdx < CHAR_WIDTH; dotIdx++) {
+                uint16_t color = (symbolFontBytes[dotIdx] & bitMask) ? params->color : params->bgColor;
+                for (int pxIdx = params->size - 1; pxIdx >= 0; pxIdx--) {
+                    params->buff[wordIdx++] = color;
+                }
             }
         }
     }
     *chunkAddress = (const unsigned char *) params->buff;
     params->yIndex++;
-    return CHAR_WIDTH * params->size * 2;
+    return params->buffSize*2;
 }
+
 /*Draws a character (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
 /*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
 void ILI9341_Draw_Char(char Character, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size,
-        uint16_t Background_Colour) {
-    size_t buffSize = CHAR_WIDTH * Size;
+                       uint16_t Background_Colour) {
+    ILI9341_Draw_Text_Len(&Character, 1, X, Y, Colour, Size, Background_Colour);
+}
+
+/*Draws an array of characters (fonts imported from fonts.h) at X,Y location with specified font colour, size and Background colour*/
+/*See fonts.h implementation of font on what is required for changing to a different font when switching fonts libraries*/
+void ILI9341_Draw_Text_Len(const char *Text, uint8_t Len, uint8_t X, uint8_t Y, uint16_t Colour, uint16_t Size,
+                           uint16_t Background_Colour) {
+    size_t buffSize = CHAR_WIDTH * Len * Size;
     uint16_t buff[buffSize];
-    uint8_t c = Character >= 32 ? (Character - 32) : '?';
     uint16_t swapColour = (Colour >> 8u) | (Colour << 8u);
     uint16_t swapBgColour = (Background_Colour >> 8u) | (Background_Colour << 8u);
     struct TEXT_SEND_PARAMS textSendParams = {
@@ -305,7 +310,10 @@ void ILI9341_Draw_Char(char Character, uint8_t X, uint8_t Y, uint16_t Colour, ui
             .color= swapColour,
             .size = Size,
             .buff = buff,
-            .symbolFontBytes = font[c]
+            .buffSize = buffSize,
+            .str = Text,
+            .strLen = Len
     };
-    ILI9341_Draw_Box_By_Chunks(charDataChunk, &textSendParams, X, Y, CHAR_WIDTH * Size, CHAR_HEIGHT * Size);
+    ILI9341_Draw_Box_By_Chunks(textDataChunk, &textSendParams, X, Y, CHAR_WIDTH * Size * Len, CHAR_HEIGHT * Size);
 }
+
