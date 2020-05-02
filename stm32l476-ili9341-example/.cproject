@@ -97,6 +97,8 @@
                                     									
                                     <listOptionValue builtIn="false" value="Core/Inc"/>
                                     								
+									<listOptionValue builtIn="false" value="&quot;${ProjDirPath}/../Src&quot;"/>
+                                    								
                                 </option>
                                 								
                                 <inputType id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c.752801627" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.c.compiler.input.c"/>
