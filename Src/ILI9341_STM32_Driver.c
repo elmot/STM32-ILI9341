@@ -443,8 +443,11 @@ if((Y+Height-1)>=LCD_HEIGHT)
 	{
 		Height=LCD_HEIGHT-Y;
 	}
-ILI9341_Set_Address(X, Y, X+Width-1, Y+Height-1);
-ILI9341_Draw_Colour_Burst(Colour, Height*Width);
+if ((Height > 0) && (Width > 0))
+	{
+		ILI9341_Set_Address(X, Y, X+Width-1, Y+Height-1);
+		ILI9341_Draw_Colour_Burst(Colour, Height*Width);
+	}
 }
 
 //DRAW LINE FROM X,Y LOCATION to X+Width,Y LOCATION
@@ -455,8 +458,11 @@ if((X+Width-1)>=LCD_WIDTH)
 	{
 		Width=LCD_WIDTH-X;
 	}
-ILI9341_Set_Address(X, Y, X+Width-1, Y);
-ILI9341_Draw_Colour_Burst(Colour, Width);
+if (Width > 0)
+	{
+		ILI9341_Set_Address(X, Y, X+Width-1, Y);
+		ILI9341_Draw_Colour_Burst(Colour, Width);
+	}
 }
 
 //DRAW LINE FROM X,Y LOCATION to X,Y+Height LOCATION
@@ -467,7 +473,10 @@ if((Y+Height-1)>=LCD_HEIGHT)
 	{
 		Height=LCD_HEIGHT-Y;
 	}
-ILI9341_Set_Address(X, Y, X, Y+Height-1);
-ILI9341_Draw_Colour_Burst(Colour, Height);
+if (Height > 0)
+	{
+		ILI9341_Set_Address(X, Y, X, Y+Height-1);
+		ILI9341_Draw_Colour_Burst(Colour, Height);
+	}
 }
 
