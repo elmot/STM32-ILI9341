@@ -48,7 +48,7 @@
 #include "ILI9341_GFX.h"
 #include <string.h>
 #include "5x5_font.h"
-#include "spi.h"
+//#include "spi.h"
 
 /*Draw hollow circle at X,Y location with specified radius and colour. X and Y represent circles center */
 void ILI9341_Draw_Hollow_Circle(uint16_t X, uint16_t Y, uint16_t Radius, uint16_t Colour) {
