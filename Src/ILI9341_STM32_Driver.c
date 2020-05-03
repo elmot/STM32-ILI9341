@@ -443,8 +443,11 @@ if((Y+Height-1)>=LCD_HEIGHT)
 	{
 		Height=LCD_HEIGHT-Y;
 	}
-ILI9341_Set_Address(X, Y, X+Width-1, Y+Height-1);
-ILI9341_Draw_Colour_Burst(Colour, Height*Width);
+if ((Height > 0) && (Width > 0))
+	{
+		ILI9341_Set_Address(X, Y, X+Width-1, Y+Height-1);
+		ILI9341_Draw_Colour_Burst(Colour, Height*Width);
+	}
 }
 
 //DRAW LINE FROM X,Y LOCATION to X+Width,Y LOCATION
